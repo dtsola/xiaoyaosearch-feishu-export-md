@@ -26,23 +26,23 @@ const program = new Command();
 
 program
   .name('feishu-export')
-  .description('小遥搜索飞书导出工具 - 将飞书文档转换为 Markdown 格式')
+  .description('小遥搜索飞书导出工具 / Xiaoyaosearch Feishu Export Tool - 将飞书文档转换为 Markdown 格式')
   .version(VERSION);
 
 // --- export 子命令 ---
 
 program
   .command('export')
-  .description('导出飞书文档为 Markdown')
-  .option('-d, --doc <token>', '云文档的 document_id 或 URL')
-  .option('-w, --wiki <token>', '知识库文档的 node_token 或 URL')
-  .option('--app-id <id>', '飞书应用 App ID（也可通过 FEISHU_APP_ID 环境变量设置）')
-  .option('--app-secret <secret>', '飞书应用 App Secret（也可通过 FEISHU_APP_SECRET 环境变量设置）')
-  .option('-o, --output <dir>', '输出目录', './output')
-  .option('--endpoint <url>', '飞书 API 端点', 'https://open.feishu.cn')
-  .option('--no-images', '不下载图片，保持 token 引用')
-  .option('--incremental', '增量导出模式')
-  .option('--debug', '输出详细调试日志')
+  .description('导出飞书文档为 Markdown / Export Feishu documents to Markdown')
+  .option('-d, --doc <token>', '云文档的 document_id 或 URL / Document ID or URL')
+  .option('-w, --wiki <token>', '知识库文档的 node_token 或 URL / Wiki node token or URL')
+  .option('--app-id <id>', '飞书应用 App ID（也可通过 FEISHU_APP_ID 环境变量设置） / Feishu App ID')
+  .option('--app-secret <secret>', '飞书应用 App Secret（也可通过 FEISHU_APP_SECRET 环境变量设置） / Feishu App Secret')
+  .option('-o, --output <dir>', '输出目录 / Output directory', './output')
+  .option('--endpoint <url>', '飞书 API 端点 / Feishu API endpoint', 'https://open.feishu.cn')
+  .option('--no-images', '不下载图片，保持 token 引用 / Do not download images')
+  .option('--incremental', '增量导出模式 / Incremental export mode')
+  .option('--debug', '输出详细调试日志 / Enable debug logging')
   .action(async (options: Record<string, unknown>) => {
     try {
       await exportDocument(options);
@@ -56,8 +56,8 @@ program
 
 program
   .command('init')
-  .description('初始化配置（交互式）')
-  .option('-p, --profile <name>', '配置文件名称', 'default')
+  .description('初始化配置（交互式） / Initialize configuration interactively')
+  .option('-p, --profile <name>', '配置文件名称 / Profile name', 'default')
   .action(async (options: Record<string, unknown>) => {
     try {
       await initCommand({ profile: options.profile as string });
@@ -69,11 +69,11 @@ program
 
 // --- config 子命令 ---
 
-const configCmd = program.command('config').description('配置管理');
+const configCmd = program.command('config').description('配置管理 / Configuration management');
 
 configCmd
   .command('get [key]')
-  .description('获取配置项')
+  .description('获取配置项 / Get configuration value')
   .action(async (key?: string) => {
     try {
       await configGet(key);
@@ -85,7 +85,7 @@ configCmd
 
 configCmd
   .command('set <key> <value>')
-  .description('设置配置项')
+  .description('设置配置项 / Set configuration value')
   .action(async (key: string, value: string) => {
     try {
       await configSet(key, value);
@@ -97,7 +97,7 @@ configCmd
 
 configCmd
   .command('reset')
-  .description('重置配置')
+  .description('重置配置 / Reset configuration')
   .action(async () => {
     try {
       await configReset();
@@ -109,7 +109,7 @@ configCmd
 
 configCmd
   .command('list')
-  .description('列出所有配置文件')
+  .description('列出所有配置文件 / List all configuration profiles')
   .action(async () => {
     try {
       await configList();
@@ -121,7 +121,7 @@ configCmd
 
 configCmd
   .command('use <profile>')
-  .description('切换配置文件')
+  .description('切换配置文件 / Switch configuration profile')
   .action(async (profile: string) => {
     try {
       await configUse(profile);
@@ -135,16 +135,16 @@ configCmd
 
 program
   .command('docs')
-  .description('批量导出文档')
-  .option('--file <path>', '从文件读取文档 ID 列表')
-  .option('--ids <list>', '逗号分隔的文档 ID 列表')
-  .option('-o, --output <dir>', '输出目录', './output')
-  .option('--no-images', '不下载图片')
-  .option('--incremental', '增量导出（仅导出有更新的文档）')
-  .option('-c, --concurrency <number>', '并发数量', parseInt)
-  .option('--debug', '输出详细调试日志')
-  .option('--app-id <id>', '飞书应用 App ID')
-  .option('--app-secret <secret>', '飞书应用 App Secret')
+  .description('批量导出文档 / Batch export documents')
+  .option('--file <path>', '从文件读取文档 ID 列表 / Read document IDs from file')
+  .option('--ids <list>', '逗号分隔的文档 ID 列表 / Comma-separated document IDs')
+  .option('-o, --output <dir>', '输出目录 / Output directory', './output')
+  .option('--no-images', '不下载图片 / Do not download images')
+  .option('--incremental', '增量导出（仅导出有更新的文档） / Incremental export')
+  .option('-c, --concurrency <number>', '并发数量 / Concurrency limit', parseInt)
+  .option('--debug', '输出详细调试日志 / Enable debug logging')
+  .option('--app-id <id>', '飞书应用 App ID / Feishu App ID')
+  .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (options: Record<string, unknown>) => {
     try {
       const config = resolveConfig({
@@ -172,13 +172,13 @@ program
 
 program
   .command('folder <folder_id>')
-  .description('导出文件夹')
-  .option('-o, --output <dir>', '输出目录', './output')
-  .option('--depth <number>', '最大递归深度', parseInt)
-  .option('--no-images', '不下载图片')
-  .option('--debug', '输出详细调试日志')
-  .option('--app-id <id>', '飞书应用 App ID')
-  .option('--app-secret <secret>', '飞书应用 App Secret')
+  .description('导出文件夹 / Export folder')
+  .option('-o, --output <dir>', '输出目录 / Output directory', './output')
+  .option('--depth <number>', '最大递归深度 / Maximum recursion depth', parseInt)
+  .option('--no-images', '不下载图片 / Do not download images')
+  .option('--debug', '输出详细调试日志 / Enable debug logging')
+  .option('--app-id <id>', '飞书应用 App ID / Feishu App ID')
+  .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (folderId: string, options: Record<string, unknown>) => {
     try {
       const config = resolveConfig({
@@ -203,14 +203,14 @@ program
 
 program
   .command('wiki <wiki_id>')
-  .description('导出完整知识库')
-  .option('-o, --output <dir>', '输出目录', './output')
-  .option('--index-only', '仅生成索引文件')
-  .option('--depth <number>', '最大递归深度', parseInt)
-  .option('--no-images', '不下载图片')
-  .option('--debug', '输出详细调试日志')
-  .option('--app-id <id>', '飞书应用 App ID')
-  .option('--app-secret <secret>', '飞书应用 App Secret')
+  .description('导出完整知识库 / Export entire wiki')
+  .option('-o, --output <dir>', '输出目录 / Output directory', './output')
+  .option('--index-only', '仅生成索引文件 / Generate index file only')
+  .option('--depth <number>', '最大递归深度 / Maximum recursion depth', parseInt)
+  .option('--no-images', '不下载图片 / Do not download images')
+  .option('--debug', '输出详细调试日志 / Enable debug logging')
+  .option('--app-id <id>', '飞书应用 App ID / Feishu App ID')
+  .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (wikiId: string, options: Record<string, unknown>) => {
     try {
       const config = resolveConfig({

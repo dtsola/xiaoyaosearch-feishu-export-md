@@ -63,3 +63,17 @@ olds/
 runtime/
 runtime_backup/
 
+# Node.js/TypeScript
+dist/
+build/
+*.tgz
+.pnpm-store/
+.eslintcache
+
+# 环境变量（包含敏感信息）
+.env
+.env.local
+.env.*.local
+config.json
+.feishu-export/
+

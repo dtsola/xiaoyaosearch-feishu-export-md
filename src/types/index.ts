@@ -494,6 +494,44 @@ export interface WikiNodeInfo {
   };
 }
 
+/** Wiki 子节点列表响应 */
+export interface WikiChildrenResponse {
+  items: WikiNodeItem[];
+  has_more: boolean;
+  page_token?: string;
+}
+
+/** Wiki 节点项 */
+export interface WikiNodeItem {
+  space_id: string;
+  node_token: string;
+  obj_type: string;
+  obj_token: string;
+  parent_node_token: string;
+  node_type: string;
+  title: string;
+  has_child: boolean;
+}
+
+// ==================== 文件夹类型 ====================
+
+/** 文件夹子节点响应 */
+export interface FolderChildrenResponse {
+  items: FolderFileItem[];
+  has_more: boolean;
+  page_token?: string;
+}
+
+/** 文件夹文件项 */
+export interface FolderFileItem {
+  file_token: string;
+  type: string;
+  name: string;
+  url: string;
+  token: string;
+  parent_token: string;
+}
+
 // ==================== 应用配置 ====================
 
 /** 应用配置 */

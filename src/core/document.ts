@@ -9,6 +9,8 @@ import type {
   DocumentInfo,
   FeishuApiResponse,
   WikiNodeInfo,
+  WikiChildrenResponse,
+  FolderChildrenResponse,
 } from '../types/index.js';
 
 /**
@@ -105,5 +107,64 @@ export class DocumentClient {
     } while (pageToken);
 
     return allBlocks;
+  }
+
+  /**
+   * 获取 Wiki 子节点列表
+   * @param spaceId 知识库空间 ID
+   * @param parentNodeToken 父节点 token（空字符串获取根节点）
+   */
+  async getWikiChildren(
+    spaceId: string,
+    parentNodeToken: string = ''
+  ): Promise<WikiChildrenResponse['items']> {
+    const allItems: WikiChildrenResponse['items'] = [];
+    let pageToken: string | undefined;
+
+    do {
+      let path = `/open-apis/wiki/v2/spaces/${spaceId}/nodes?page_size=50`;
+      if (parentNodeToken) {
+        path += `&parent_node_token=${parentNodeToken}`;
+      }
+      if (pageToken) {
+        path += `&page_token=${pageToken}`;
+      }
+
+      const data = await this.request<WikiChildrenResponse>(path);
+
+      if (data.items) {
+        allItems.push(...data.items);
+      }
+
+      pageToken = data.has_more ? data.page_token : undefined;
+    } while (pageToken);
+
+    return allItems;
+  }
+
+  /**
+   * 获取文件夹子节点列表
+   * @param folderToken 文件夹 token
+   */
+  async getFolderChildren(folderToken: string): Promise<FolderChildrenResponse['items']> {
+    const allItems: FolderChildrenResponse['items'] = [];
+    let pageToken: string | undefined;
+
+    do {
+      let path = `/open-apis/drive/v1/files/${folderToken}/children?page_size=50`;
+      if (pageToken) {
+        path += `&page_token=${pageToken}`;
+      }
+
+      const data = await this.request<FolderChildrenResponse>(path);
+
+      if (data.items) {
+        allItems.push(...data.items);
+      }
+
+      pageToken = data.has_more ? data.page_token : undefined;
+    } while (pageToken);
+
+    return allItems;
   }
 }

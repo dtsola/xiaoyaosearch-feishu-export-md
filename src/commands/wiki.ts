@@ -12,6 +12,7 @@ import { MediaDownloader } from '../core/media.js';
 import { AuthManager } from '../core/auth.js';
 import { replaceFileTokens, sanitizeFilename, writeFile } from '../utils/file.js';
 import { logger } from '../utils/logger.js';
+import { addDocFooter } from '../utils/footer.js';
 
 export interface WikiOptions {
   output: string;
@@ -28,6 +29,7 @@ export interface WikiNode {
   obj_type: string;
   obj_token: string;
   title: string;
+  node_type: string;
   children?: WikiNode[];
 }
 
@@ -36,6 +38,7 @@ export interface WikiNode {
  */
 async function getWikiTree(
   documentClient: DocumentClient,
+  spaceId: string,
   nodeToken: string,
   maxDepth?: number,
   currentDepth: number = 0
@@ -48,6 +51,7 @@ async function getWikiTree(
     obj_type: nodeInfo.node.obj_type,
     obj_token: nodeInfo.node.obj_token,
     title: nodeInfo.node.title,
+    node_type: nodeInfo.node.node_type,
     children: [],
   };
 
@@ -56,15 +60,25 @@ async function getWikiTree(
     return node;
   }
 
-  // TODO: 获取子节点列表
-  // 飞书 API: GET /open-apis/wiki/v2/spaces/{space_id}/nodes
-  // 需要遍历 node_info.node.parent_node_token 或使用专门的子节点 API
+  // 如果有子节点，递归获取
+  if (nodeInfo.node.has_child) {
+    try {
+      const children = await documentClient.getWikiChildren(spaceId, nodeToken);
 
-  // 伪代码示例：
-  // const children = await getWikiChildren(nodeToken);
-  // for (const child of children) {
-  //   node.children!.push(await getWikiTree(documentClient, child.token, maxDepth, currentDepth + 1));
-  // }
+      for (const child of children) {
+        const childNode = await getWikiTree(
+          documentClient,
+          spaceId,
+          child.node_token,
+          maxDepth,
+          currentDepth + 1
+        );
+        node.children!.push(childNode);
+      }
+    } catch (err) {
+      logger.warn(`获取子节点失败: ${node.title} - ${err}`);
+    }
+  }
 
   return node;
 }
@@ -74,14 +88,19 @@ async function getWikiTree(
  */
 function generateWikiIndex(wiki: WikiNode): string {
   let markdown = `# ${wiki.title}\n\n`;
-  markdown += `## 知识库索引\n\n`;
+  markdown += `## 知识库索引 / Wiki Index\n\n`;
 
   function renderNode(node: WikiNode, depth: number = 0): string {
     const indent = '  '.repeat(depth);
     const prefix = depth === 0 ? '- ' : '* ';
-    let md = `${indent}${prefix}[${node.title}](${sanitizeFilename(node.title)}.md)\n`;
 
-    if (node.children) {
+    // 计算相对路径
+    const level = depth;
+    const prefixPath = '../'.repeat(level);
+    const fileName = sanitizeFilename(node.title);
+    let md = `${indent}${prefix}[${node.title}](${prefixPath}${fileName}.md)\n`;
+
+    if (node.children && node.children.length > 0) {
       for (const child of node.children) {
         md += renderNode(child, depth + 1);
       }
@@ -95,21 +114,23 @@ function generateWikiIndex(wiki: WikiNode): string {
 }
 
 /**
- * 递归导出 Wiki
+ * 导出单个 Wiki 节点文档
  */
-async function exportWikiRecursive(
-  documentClient: DocumentClient,
-  mediaDownloader: MediaDownloader,
+async function exportWikiDocument(
   wiki: WikiNode,
   outputDir: string,
-  indexOnly: boolean,
-  downloadImages: boolean
+  documentClient: DocumentClient,
+  mediaDownloader: MediaDownloader,
+  downloadImages: boolean,
+  endpoint: string
 ): Promise<void> {
-  const nodeDir = join(outputDir, sanitizeFilename(wiki.title));
-  await fs.mkdir(nodeDir, { recursive: true });
+  if (wiki.obj_type !== 'docx' && wiki.obj_type !== 'doc') {
+    logger.hint(`  跳过非文档节点: ${wiki.title} (类型: ${wiki.obj_type})`);
+    return;
+  }
 
-  if (wiki.obj_type === 'docx' && !indexOnly) {
-    // 导出文档内容
+  try {
+    // 获取文档块
     const blocks = await documentClient.getAllDocumentBlocks(wiki.obj_token);
     const renderer = new MarkdownRenderer();
     let markdown = renderer.parse(blocks);
@@ -121,14 +142,49 @@ async function exportWikiRecursive(
       markdown = replaceFileTokens(markdown, tokenToPath);
     }
 
-    await writeFile(join(nodeDir, `${sanitizeFilename(wiki.title)}.md`), markdown);
-  }
+    // 添加来源 footer（使用 node_token 作为 wiki URL）
+    markdown = addDocFooter(markdown, wiki.node_token, 'wiki', endpoint);
 
-  // 递归处理子节点
-  if (wiki.children) {
+    // 写入文件
+    const fileName = `${sanitizeFilename(wiki.title)}.md`;
+    const outputPath = join(outputDir, fileName);
+    await writeFile(outputPath, markdown);
+
+    logger.info(`  ✓ ${wiki.title}`);
+  } catch (err) {
+    logger.error(`  ✗ 导出失败: ${wiki.title} - ${err}`);
+  }
+}
+
+/**
+ * 递归导出 Wiki
+ */
+async function exportWikiRecursive(
+  documentClient: DocumentClient,
+  mediaDownloader: MediaDownloader,
+  wiki: WikiNode,
+  outputDir: string,
+  downloadImages: boolean,
+  endpoint: string,
+  level: number = 0
+): Promise<void> {
+  // 为每个子节点创建单独的目录
+  if (wiki.children && wiki.children.length > 0) {
     for (const child of wiki.children) {
-      await exportWikiRecursive(documentClient, mediaDownloader, child, nodeDir, indexOnly, downloadImages);
+      // 创建子目录（使用节点标题）
+      const childDirName = sanitizeFilename(child.title);
+      const childDir = join(outputDir, childDirName);
+      await fs.mkdir(childDir, { recursive: true });
+
+      // 导出当前节点的文档内容
+      await exportWikiDocument(child, childDir, documentClient, mediaDownloader, downloadImages, endpoint);
+
+      // 递归处理子节点
+      await exportWikiRecursive(documentClient, mediaDownloader, child, childDir, downloadImages, endpoint, level + 1);
     }
+  } else {
+    // 没有子节点，导出当前节点文档
+    await exportWikiDocument(wiki, outputDir, documentClient, mediaDownloader, downloadImages, endpoint);
   }
 }
 
@@ -139,9 +195,9 @@ export async function exportWiki(wikiId: string, options: WikiOptions): Promise<
   // 设置 debug 模式
   logger.setDebug(options.debug === true);
 
-  logger.info('开始导出知识库...');
+  let step = 1;
 
-  // 初始化客户端
+  // ===== 第 1 步: 初始化客户端 =====
   const authManager = new AuthManager(
     options.config.endpoint,
     options.config.appId,
@@ -154,24 +210,58 @@ export async function exportWiki(wikiId: string, options: WikiOptions): Promise<
     authManager.getAccessToken()
   );
 
-  // 获取 Wiki 树结构
-  const wikiTree = await getWikiTree(documentClient, wikiId, options.depth);
+  logger.step(step++, '开始导出知识库...');
 
-  // 生成索引文件
+  // ===== 第 2 步: 获取 Wiki 根节点信息 =====
+  const rootNodeInfo = await documentClient.getWikiNodeInfo(wikiId);
+  const spaceId = rootNodeInfo.node.space_id;
+  const wikiTitle = rootNodeInfo.node.title || wikiId;
+
+  logger.step(step++, `知识库: ${wikiTitle} (space_id: ${spaceId})`);
+
+  // ===== 第 3 步: 构建 Wiki 树 =====
+  logger.info('正在获取知识库结构...');
+  const wikiTree = await getWikiTree(documentClient, spaceId, wikiId, options.depth);
+
+  // 统计节点数量
+  function countNodes(node: WikiNode): number {
+    let count = 1;
+    if (node.children) {
+      for (const child of node.children) {
+        count += countNodes(child);
+      }
+    }
+    return count;
+  }
+  const totalNodes = countNodes(wikiTree);
+  logger.step(step++, `获取知识库结构完成 (${totalNodes} 个节点)`);
+
+  // ===== 第 4 步: 生成索引文件 =====
   const indexMarkdown = generateWikiIndex(wikiTree);
+  await fs.mkdir(options.output, { recursive: true });
   await writeFile(join(options.output, 'README.md'), indexMarkdown);
 
+  // ===== 第 5 步: 递归导出所有节点 =====
   if (!options.indexOnly) {
-    // 递归导出所有节点
+    logger.info('开始导出文档...');
     await exportWikiRecursive(
       documentClient,
       mediaDownloader,
       wikiTree,
       options.output,
-      false,
-      options.noImages !== false
+      options.noImages !== false,
+      options.config.endpoint
     );
   }
 
+  // ===== 结果输出 =====
   logger.done(`知识库导出完成: ${options.output}`);
+
+  if (options.indexOnly) {
+    logger.hint('  提示: 使用了 --index-only 选项，仅生成索引文件');
+  }
+
+  if (options.noImages) {
+    logger.hint('  提示: 使用了 --no-images 选项，图片未下载');
+  }
 }

@@ -14,6 +14,7 @@ import { MarkdownRenderer } from './converter/markdown.js';
 import { resolveConfig, validateConfig } from './utils/config.js';
 import { replaceFileTokens, sanitizeFilename, writeFile } from './utils/file.js';
 import { logger } from './utils/logger.js';
+import { addDocFooter } from './utils/footer.js';
 import { initCommand } from './commands/init.js';
 import { configGet, configSet, configReset, configList, configUse } from './commands/config.js';
 import { exportDocs } from './commands/docs.js';
@@ -372,6 +373,11 @@ async function exportDocument(options: Record<string, unknown>): Promise<void> {
   } else if (fileTokens.length > 0) {
     logger.step(step++, `跳过下载 ${fileTokens.length} 个媒体文件（--no-images）`);
   }
+
+  // ===== 添加来源链接 =====
+  const docType = docSource.type === 'wiki' ? 'wiki' : 'docx';
+  const docId = docSource.type === 'wiki' ? docSource.nodeToken : documentId;
+  markdown = addDocFooter(markdown, docId, docType, config.endpoint);
 
   // ===== 写入文件 =====
   const fileName = `${sanitizeFilename(docTitle)}.md`;

@@ -59,6 +59,7 @@ release/
 docs/base/
 olds/
 output/
+list.txt
 
 # 整合包运行时
 runtime/

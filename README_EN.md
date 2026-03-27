@@ -1,5 +1,7 @@
 # Xiaoyao Search Feishu Export Tool
 
+English | [简体中文](README.md)
+
 > A CLI tool to export Feishu (Lark) documents and wikis to Markdown format
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

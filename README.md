@@ -1,5 +1,7 @@
 # 小遥搜索飞书导出工具
 
+[English](README_EN.md) | 简体中文
+
 > 将飞书文档/知识库导出为 Markdown 格式的 CLI 工具
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

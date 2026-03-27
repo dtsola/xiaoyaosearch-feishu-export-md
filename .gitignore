@@ -58,6 +58,7 @@ release/
 **/项目提示词.md
 docs/base/
 olds/
+output/
 
 # 整合包运行时
 runtime/

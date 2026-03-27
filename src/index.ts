@@ -148,7 +148,7 @@ program
   .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (options: Record<string, unknown>) => {
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         appId: options.appId as string | undefined,
         appSecret: options.appSecret as string | undefined,
         outputDir: options.output as string | undefined,
@@ -182,7 +182,7 @@ program
   .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (folderId: string, options: Record<string, unknown>) => {
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         appId: options.appId as string | undefined,
         appSecret: options.appSecret as string | undefined,
         outputDir: options.output as string | undefined,
@@ -214,7 +214,7 @@ program
   .option('--app-secret <secret>', '飞书应用 App Secret / Feishu App Secret')
   .action(async (wikiId: string, options: Record<string, unknown>) => {
     try {
-      const config = resolveConfig({
+      const config = await resolveConfig({
         appId: options.appId as string | undefined,
         appSecret: options.appSecret as string | undefined,
         outputDir: options.output as string | undefined,
@@ -295,7 +295,7 @@ async function exportDocument(options: Record<string, unknown>): Promise<void> {
   const docSource = resolveDocSource(options);
 
   // 解析配置
-  const config = resolveConfig({
+  const config = await resolveConfig({
     appId: options.appId as string | undefined,
     appSecret: options.appSecret as string | undefined,
     endpoint: options.endpoint as string | undefined,

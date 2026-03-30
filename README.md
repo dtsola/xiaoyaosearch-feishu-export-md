@@ -11,9 +11,9 @@
 >
 > [小遥搜索](https://github.com/dtsola/xiaoyaosearch) —— 听懂你的话、看懂你的图，用 AI 找到本地任何文件。让搜索像聊天一样简单。
 
-<!-- <p align="center">
+<p align="center">
   <img src="docs/产品文档/产品截图/宣传海报图.png" alt="小遥搜索飞书导出工具宣传海报">
-</p> -->
+</p>
 
 ---
 
@@ -91,18 +91,64 @@
 - ✅ 交互式配置初始化
 - ✅ 多配置文件支持
 
+---
+
+## 功能截图
+
+### 交互式配置初始化
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/01-初始化飞书应用信息.png" alt="初始化飞书应用信息">
+</p>
+
+运行 `feishu-export init` 命令，通过交互式向导快速配置飞书应用信息。
+
+### 导出单个文档
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/02-导出单个文档.png" alt="导出单个文档">
+</p>
+
+使用 `feishu-export doc <doc_id>` 命令导出单个飞书文档。
+
+### 批量导出文档
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/03-批量导出文档.png" alt="批量导出文档">
+</p>
+
+使用 `feishu-export docs --file <path>` 命令批量导出多个文档，实时显示导出进度。
+
+### 导出知识库
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/04-导出知识库.png" alt="导出知识库">
+</p>
+
+使用 `feishu-export wiki <wiki_id>` 命令导出完整的飞书知识库，保持原有目录结构。
+
+---
+
 ## 安装
 
 ### 环境要求
 
-- **Node.js**: 21.x+ ([下载地址](https://nodejs.org/en/download))
+- **Node.js**: 18.x+ ([下载地址](https://nodejs.org/en/download))
 - **npm**: 18.x+ 或 pnpm 8.x+
 
-### 全局安装
+### 🚀 一键安装（推荐）
 
 ```bash
 npm install -g xiaoyaosearch-feishu-export
 ```
+
+安装完成后，验证安装是否成功：
+
+```bash
+feishu-export --version
+```
+
+### 全局安装
 
 ### 本地使用
 

@@ -11,6 +11,10 @@ English | [简体中文](README.md)
 >
 > [Xiaoyao Search](https://github.com/dtsola/xiaoyaosearch) — XiaoyaoSearch: Understands your words, reads your images, finds any local file with AI. Making search as easy as chatting.
 
+<p align="center">
+  <img src="docs/产品文档/产品截图/宣传海报图.png" alt="Xiaoyao Search Feishu Export Tool Poster">
+</p>
+
 ---
 
 ## Author
@@ -75,18 +79,64 @@ Use the same commands to complete export operations on Windows, macOS, or Linux.
 - ✅ Interactive configuration initialization
 - ✅ Multiple configuration file support
 
+---
+
+## Feature Screenshots
+
+### Interactive Configuration Initialization
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/01-初始化飞书应用信息.png" alt="Initialize Feishu App Information">
+</p>
+
+Run `feishu-export init` to quickly configure Feishu app information through an interactive wizard.
+
+### Export Single Document
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/02-导出单个文档.png" alt="Export Single Document">
+</p>
+
+Use `feishu-export doc <doc_id>` to export a single Feishu document.
+
+### Batch Export Documents
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/03-批量导出文档.png" alt="Batch Export Documents">
+</p>
+
+Use `feishu-export docs --file <path>` to batch export multiple documents with real-time progress display.
+
+### Export Knowledge Base
+
+<p align="center">
+  <img src="docs/产品文档/产品截图/04-导出知识库.png" alt="Export Knowledge Base">
+</p>
+
+Use `feishu-export wiki <wiki_id>` to export a complete Feishu knowledge base while maintaining the original directory structure.
+
+---
+
 ## Installation
 
 ### Requirements
 
-- **Node.js**: 21.x+ ([Download](https://nodejs.org/en/download))
+- **Node.js**: 18.x+ ([Download](https://nodejs.org/en/download))
 - **npm**: 18.x+ or pnpm 8.x+
 
-### Global Installation
+### 🚀 One-Click Installation (Recommended)
 
 ```bash
 npm install -g xiaoyaosearch-feishu-export
 ```
+
+Verify installation after completion:
+
+```bash
+feishu-export --version
+```
+
+### Global Installation
 
 ### Local Usage
 

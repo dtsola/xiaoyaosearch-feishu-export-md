@@ -25,5 +25,5 @@ export function addDocFooter(
   const updateTime = now.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, '');
 
   // 添加来源 footer
-  return markdown + `\n\n> 更新: ${updateTime}  \n> 原文: <${docUrl}>`;
+  return markdown + `\n\n> 更新: ${updateTime}  \n> 来源类型: feishu  \n> 原文: <${docUrl}>`;
 }
